@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Movie Booking</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- Navbar Placeholder -->
+<div id="navbar-placeholder"></div>
+
+<!-- Main Content -->
+<main class="container">
+  <h1>Now Showing</h1>
+  <div class="movie-list">
+    <!-- Movie Card -->
+    <div class="movie-card">
+      <img src="posters/AvengersEndGame.jpg" alt="Avengers: Endgame">
+      <h2>Avengers: Endgame</h2>
+      <p>Status: <span class="status available">Available</span></p>
+      <button onclick="selectSeats('Avengers: Endgame')">Book Seats</button>
+    </div>
+
+    <div class="movie-card">
+      <img src="posters/Joker.jpg" alt="Joker">
+      <h2>Joker</h2>
+      <p>Status: <span class="status ongoing">Ongoing</span></p>
+      <button onclick="selectSeats('Joker')">Book Seats</button>
+    </div>
+
+    <div class="movie-card">
+      <img src="posters/Inception.jpg" alt="Inception">
+      <h2>Inception</h2>
+      <p>Status: <span class="status sold">Sold Out</span></p>
+      <button disabled>Sold Out</button>
+    </div>
+  </div>
+
+  <!-- Seat Selection Modal -->
+  <div id="seatModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <h2>Select Seats</h2>
+      <div class="seats-container" id="seatsContainer"></div>
+      <p>Total Price: ₹<span id="totalPrice">0</span></p>
+      <form action="book.php" method="POST">
+        <input type="hidden" id="selectedSeatsInput" name="selected_seats">
+        <input type="hidden" id="movieNameInput" name="movie_name">
+        <button type="submit" class="book-btn">Book Now</button>
+      </form>
+    </div>
+  </div>
+</main>
+
+<!-- Footer Placeholder -->
+<div id="footer-placeholder"></div>
+
+<script src="script.js"></script>
+
+<!-- Load Navbar and Footer Dynamically -->
+<script>
+// Load navbar.html
+fetch('navbar.html')
+  .then(res => res.text())
+  .then(data => {
+    document.getElementById('navbar-placeholder').innerHTML = data;
+  });
+
+// Load footer.html
+fetch('footer.html')
+  .then(res => res.text())
+  .then(data => {
+    document.getElementById('footer-placeholder').innerHTML = data;
+  });
+</script>
+
+<!-- JS Function for Movie Selection -->
+<script>
+function selectSeats(movie) {
+  // Save selected movie in localStorage
+  localStorage.setItem("selectedMovie", movie);
+
+  // Redirect to seat selection page
+  window.location.href = "seats.html";
+}
+
+function closeModal() {
+  document.getElementById("seatModal").style.display = "none";
+}
+</script>
+
+</body>
+</html>

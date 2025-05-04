@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Select Seats</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- Navbar Placeholder -->
+<div id="navbar-placeholder"></div>
+
+<main class="container">
+  <h1 id="movieHeading">Select Your Seats</h1>
+
+  <!-- Seat Grid -->
+  <div class="seats-container" id="seatsContainer"></div>
+
+  <!-- Price Summary -->
+  <p>Total Price: ₹<span id="totalPrice">0</span></p>
+
+  <!-- Booking Form -->
+  <form id="bookingForm" action="book.php" method="POST">
+    <!-- Hidden Inputs -->
+    <input type="hidden" id="movieNameInput" name="movie_name">
+    <input type="hidden" id="selectedSeatsInput" name="selected_seats">
+    <button type="submit" class="book-btn">Book Now</button>
+  </form>
+</main>
+
+<!-- Footer Placeholder -->
+<div id="footer-placeholder"></div>
+
+<!-- Load Navbar/Footer -->
+<script>
+fetch('navbar.html').then(res => res.text()).then(data => {
+  document.getElementById('navbar-placeholder').innerHTML = data;
+});
+fetch('footer.html').then(res => res.text()).then(data => {
+  document.getElementById('footer-placeholder').innerHTML = data;
+});
+</script>
+
+<!-- JavaScript Logic -->
+<script src="script.js"></script>
+
+<!-- Inline Validation Script -->
+<script>
+// Set movie name from localStorage and update heading
+const movieName = localStorage.getItem("selectedMovie") || "Unknown Movie";
+const movieInput = document.getElementById("movieNameInput");
+
+if (movieInput) {
+  movieInput.value = movieName;
+}
+
+const heading = document.getElementById("movieHeading");
+if (heading) {
+  heading.innerText = `Select Seats for "${movieName}"`;
+}
+
+// Optional: Validate before form submit
+document.getElementById("bookingForm")?.addEventListener("submit", function(e) {
+  const seats = document.getElementById("selectedSeatsInput").value;
+
+  if (!seats) {
+    e.preventDefault();
+    alert("Please select at least one seat.");
+  }
+});
+</script>
+
+</body>
+</html>
