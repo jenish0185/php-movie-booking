@@ -90,10 +90,12 @@ body {
   background: #4caf50;
   color: white;
 }
+
 .ongoing {
   background: #ff9800;
   color: white;
 }
+
 .sold {
   background: #f44336;
   color: white;
@@ -209,10 +211,64 @@ body {
   background: #45a049;
 }
 
-/* Footer */
+/* Enhanced Footer Styles */
 .footer {
-  text-align: center;
-  padding: 1rem;
   background-color: #111;
-  color: white;
+  color: #f4f4f4;
+  margin: 0;
+  padding: 1rem 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.footer-column {
+  flex: 1;
+  min-width: 200px;
+}
+
+.footer-column h3 {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  color: #fff;
+}
+
+.footer-column p,
+.footer-column ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  line-height: 1.8;
+  font-size: 0.95rem;
+}
+
+.footer-column ul li {
+  margin-bottom: 0.5rem;
+}
+
+.footer-column ul li a {
+  color: #ccc;
+  text-decoration: none;
+}
+
+.footer-column ul li a:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+/* Copyright Section */
+.footer-bottom {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #333;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #888;
 }

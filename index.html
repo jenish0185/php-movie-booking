@@ -1,95 +1,137 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Movie Booking</title>
-  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
 
-<!-- Navbar Placeholder -->
-<div id="navbar-placeholder"></div>
+  <!-- Navbar Placeholder -->
+  <div id="navbar-placeholder"></div>
 
-<!-- Main Content -->
-<main class="container">
-  <h1>Now Showing</h1>
-  <div class="movie-list">
-    <!-- Movie Card -->
-    <div class="movie-card">
-      <img src="posters/AvengersEndGame.jpg" alt="Avengers: Endgame">
-      <h2>Avengers: Endgame</h2>
-      <p>Status: <span class="status available">Available</span></p>
-      <button onclick="selectSeats('Avengers: Endgame')">Book Seats</button>
+  <!-- Main Content -->
+  <main class="container">
+    <h1>Now Showing</h1>
+    <div class="movie-list">
+      <!-- Movie Card -->
+      <div class="movie-card">
+        <img src="posters/AvengersEndGame.jpg" alt="Avengers: Endgame">
+        <h2>Avengers: Endgame</h2>
+        <p>Status: <span class="status available">Available</span></p>
+        <button onclick="selectSeats('Avengers: Endgame')">Book Seats</button>
+      </div>
+
+      <div class="movie-card">
+        <img src="posters/Joker.jpg" alt="Joker">
+        <h2>Joker</h2>
+        <p>Status: <span class="status available">Available</span></p> <button onclick="selectSeats('Joker')">Book
+          Seats</button>
+      </div>
+
+      <div class="movie-card">
+        <img src="posters/Inception.jpg" alt="Inception">
+        <h2>Inception</h2>
+        <p>Status: <span class="status available">Available</span></p> <button disabled>Sold Out</button>
+      </div>
     </div>
 
-    <div class="movie-card">
-      <img src="posters/Joker.jpg" alt="Joker">
-      <h2>Joker</h2>
-      <p>Status: <span class="status ongoing">Ongoing</span></p>
-      <button onclick="selectSeats('Joker')">Book Seats</button>
+    <!-- Seat Selection Modal -->
+    <div id="seatModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h2>Select Seats</h2>
+        <div class="seats-container" id="seatsContainer"></div>
+        <p>Total Price: ₹<span id="totalPrice">0</span></p>
+        <form action="book.php" method="POST">
+          <input type="hidden" id="selectedSeatsInput" name="selected_seats">
+          <input type="hidden" id="movieNameInput" name="movie_name">
+          <button type="submit" class="book-btn">Book Now</button>
+        </form>
+      </div>
     </div>
+  </main>
 
-    <div class="movie-card">
-      <img src="posters/Inception.jpg" alt="Inception">
-      <h2>Inception</h2>
-      <p>Status: <span class="status sold">Sold Out</span></p>
-      <button disabled>Sold Out</button>
-    </div>
-  </div>
+  <!-- Footer Placeholder -->
+  <div id="footer-placeholder"></div>
 
-  <!-- Seat Selection Modal -->
-  <div id="seatModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeModal()">&times;</span>
-      <h2>Select Seats</h2>
-      <div class="seats-container" id="seatsContainer"></div>
-      <p>Total Price: ₹<span id="totalPrice">0</span></p>
-      <form action="book.php" method="POST">
-        <input type="hidden" id="selectedSeatsInput" name="selected_seats">
-        <input type="hidden" id="movieNameInput" name="movie_name">
-        <button type="submit" class="book-btn">Book Now</button>
-      </form>
-    </div>
-  </div>
-</main>
+  <script src="script.js"></script>
 
-<!-- Footer Placeholder -->
-<div id="footer-placeholder"></div>
+  <!-- Load Navbar and Footer Dynamically -->
+  <script>
+    // Load navbar.html
+    fetch('navbar.html')
+      .then(res => res.text())
+      .then(data => {
+        document.getElementById('navbar-placeholder').innerHTML = data;
+      });
 
-<script src="script.js"></script>
+    // Load footer.html
+    fetch('footer.html')
+      .then(res => res.text())
+      .then(data => {
+        document.getElementById('footer-placeholder').innerHTML = data;
+      });
+  </script>
 
-<!-- Load Navbar and Footer Dynamically -->
-<script>
-// Load navbar.html
-fetch('navbar.html')
-  .then(res => res.text())
-  .then(data => {
-    document.getElementById('navbar-placeholder').innerHTML = data;
-  });
+  <!-- JS Function for Movie Selection -->
+  <script>
+    function selectSeats(movie) {
+      // Save selected movie in localStorage
+      localStorage.setItem("selectedMovie", movie);
 
-// Load footer.html
-fetch('footer.html')
-  .then(res => res.text())
-  .then(data => {
-    document.getElementById('footer-placeholder').innerHTML = data;
-  });
-</script>
+      // Redirect to seat selection page
+      window.location.href = "seats.html";
+    }
 
-<!-- JS Function for Movie Selection -->
-<script>
-function selectSeats(movie) {
-  // Save selected movie in localStorage
-  localStorage.setItem("selectedMovie", movie);
+    function closeModal() {
+      document.getElementById("seatModal").style.display = "none";
+    }
+  </script>
 
-  // Redirect to seat selection page
-  window.location.href = "seats.html";
-}
+  <script>
+    // Function to fetch real-time seat status
+    function updateMovieStatus() {
+      fetch('get_movie_status.php')
+        .then(res => res.json())
+        .then(data => {
+          document.querySelectorAll('.movie-card').forEach(card => {
+            const title = card.querySelector('h2').textContent.trim();
+            const statusSpan = card.querySelector('.status');
+            const bookBtn = card.querySelector('button');
 
-function closeModal() {
-  document.getElementById("seatModal").style.display = "none";
-}
-</script>
+            if (data[title]) {
+              const status = data[title].status;
+
+              if (status === 'sold_out') {
+                statusSpan.textContent = 'Sold Out';
+                statusSpan.className = 'status sold';
+                bookBtn.disabled = true;
+                bookBtn.textContent = 'Sold Out';
+              } else {
+                statusSpan.textContent = 'Available';
+                statusSpan.className = 'status available';
+                bookBtn.disabled = false;
+                bookBtn.textContent = 'Book Seats';
+              }
+            }
+          });
+        })
+        .catch(err => {
+          console.error("Error fetching movie status:", err);
+        });
+    }
+
+    // Run once when page loads
+    updateMovieStatus();
+
+    // Optional: Refresh every minute
+    setInterval(updateMovieStatus, 60000); // Every 60 seconds
+  </script>
 
 </body>
+
 </html>
