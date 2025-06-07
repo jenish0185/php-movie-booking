@@ -10,12 +10,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $seats = isset($_POST['selected_seats']) ? $conn->real_escape_string(trim($_POST['selected_seats'])) : '';
 
     if (empty($movie) || empty($seats)) {
-      die("🚫 Missing data! Either movie or seats were not sent.");
-    }
-
-    // Validate input
-    if (empty($movie) || empty($seats)) {
-        echo '
+        die('
         <!DOCTYPE html>
         <html lang="en">
         <head>
@@ -64,18 +59,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <a href="index.html" class="back-btn">Go Back</a>
             </div>
         </body>
-        </html>';
-        exit;
+        </html>');
     }
 
-    // Optional: Prevent duplicate bookings
+    // Prevent duplicate bookings
     $checkStmt = $conn->prepare("SELECT seats FROM bookings WHERE movie_name = ?");
     $checkStmt->bind_param("s", $movie);
     $checkStmt->execute();
     $checkResult = $checkStmt->get_result();
 
     $existingSeats = [];
-
     while ($row = $checkResult->fetch_assoc()) {
         $existingSeats = array_merge($existingSeats, explode(',', $row['seats']));
     }
@@ -157,21 +150,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     margin: 0;
                     padding: 0;
                 }
-                .confirmation, .error {
+                .confirmation {
                     max-width: 500px;
                     margin: 60px auto;
                     padding: 30px;
                     border-radius: 10px;
                     box-shadow: 0 0 10px rgba(0,0,0,0.1);
-                    text-align: center;
-                }
-                .confirmation {
                     background-color: #e6f9e6;
                     color: green;
-                }
-                .error {
-                    background-color: #ffe6e6;
-                    color: red;
+                    text-align: center;
                 }
                 .back-btn {
                     display: inline-block;
@@ -191,22 +178,28 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <body>
             <div class="confirmation">
                 <h2>✅ Booking Confirmed!</h2>
-                <p><strong>Movie:</strong> ' . htmlspecialchars($movie) . '</p>
-                <p><strong>Seats Booked:</strong> ' . htmlspecialchars($seats) . '</p>
-                <a href="index.html" class="back-btn">Book Another Show</a>
-
-                <script>
-                  localStorage.removeItem("selectedMovie");
-                  setTimeout(() => {
-                    window.location.href = "index.html";
-                  }, 5000);
-                </script>
+                <p>You will be redirected to your ticket shortly...</p>
             </div>
+
+            <script>
+                // Save booking data to localStorage
+                localStorage.setItem("bookingData", JSON.stringify({
+                    movie: "' . $movie . '",
+                    seats: ["' . implode('","', array_map('htmlspecialchars', explode(',', $seats))) . '"],
+                    price: ' . (count(explode(',', $seats)) * 150) . ',
+                    date: "' . date("Y-m-d H:i:s") . '"
+                }));
+
+                // Clear selected movie
+                localStorage.removeItem("selectedMovie");
+
+                // Redirect to confirmation page
+                window.location.href = "confirmation.html";
+            </script>
         </body>
         </html>';
     } else {
         error_log("DB Error: " . $stmt->error . " | Movie: $movie | Seats: $seats");
-
         echo '
         <!DOCTYPE html>
         <html lang="en">
@@ -323,4 +316,3 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 
 $conn->close();
-?>

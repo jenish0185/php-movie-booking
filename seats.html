@@ -1,74 +1,169 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <title>Select Seats</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    .seats-container {
+      display: grid;
+      grid-template-columns: repeat(10, 30px);
+      gap: 10px;
+      justify-content: center;
+      margin: 20px 0;
+    }
+
+    .seat {
+      width: 30px;
+      height: 30px;
+      background-color: #ddd;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .seat.selected {
+      background-color: #27ae60;
+    }
+
+    .book-btn {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .book-btn:hover {
+      background-color: #2980b9;
+    }
+  </style>
 </head>
+
 <body>
 
-<!-- Navbar Placeholder -->
-<div id="navbar-placeholder"></div>
+  <!-- Navbar Placeholder -->
+  <div id="navbar-placeholder"></div>
 
-<main class="container">
-  <h1 id="movieHeading">Select Your Seats</h1>
+  <main class="container">
+    <h1 id="movieHeading">Select Your Seats</h1>
 
-  <!-- Seat Grid -->
-  <div class="seats-container" id="seatsContainer"></div>
+    <!-- Seat Grid -->
+    <div class="seats-container" id="seatsContainer"></div>
 
-  <!-- Price Summary -->
-  <p>Total Price: ₹<span id="totalPrice">0</span></p>
+    <!-- Price Summary -->
+    <p>Total Price: ₹<span id="totalPrice">0</span></p>
 
-  <!-- Booking Form -->
-  <form id="bookingForm" action="book.php" method="POST">
-    <!-- Hidden Inputs -->
-    <input type="hidden" id="movieNameInput" name="movie_name">
-    <input type="hidden" id="selectedSeatsInput" name="selected_seats">
-    <button type="submit" class="book-btn">Book Now</button>
-  </form>
-</main>
+    <!-- Booking Form -->
+    <form id="bookingForm" action="book.php" method="POST">
+      <!-- Hidden Inputs -->
+      <input type="hidden" id="movieNameInput" name="movie_name">
+      <input type="hidden" id="selectedSeatsInput" name="selected_seats">
+      <button type="submit" class="book-btn">Book Now</button>
+    </form>
+  </main>
 
-<!-- Footer Placeholder -->
-<div id="footer-placeholder"></div>
+  <!-- Footer Placeholder -->
+  <div id="footer-placeholder"></div>
 
-<!-- Load Navbar/Footer -->
-<script>
-fetch('navbar.html').then(res => res.text()).then(data => {
-  document.getElementById('navbar-placeholder').innerHTML = data;
-});
-fetch('footer.html').then(res => res.text()).then(data => {
-  document.getElementById('footer-placeholder').innerHTML = data;
-});
-</script>
+  <!-- Load Navbar/Footer -->
+  <script>
+    fetch('navbar.html').then(res => res.text()).then(data => {
+      document.getElementById('navbar-placeholder').innerHTML = data;
+    });
+    fetch('footer.html').then(res => res.text()).then(data => {
+      document.getElementById('footer-placeholder').innerHTML = data;
+    });
+  </script>
 
-<!-- JavaScript Logic -->
-<script src="script.js"></script>
+  <!-- JavaScript Logic -->
+  <script src="script.js"></script>
 
-<!-- Inline Validation Script -->
-<script>
-// Set movie name from localStorage and update heading
-const movieName = localStorage.getItem("selectedMovie") || "Unknown Movie";
-const movieInput = document.getElementById("movieNameInput");
+  <!-- Inline Seat & Booking Script -->
+  <script>
+    const SEAT_PRICE = 150;
 
-if (movieInput) {
-  movieInput.value = movieName;
-}
+    // Get movie name from localStorage
+    const movieName = localStorage.getItem("selectedMovie") || "Unknown Movie";
+    document.getElementById("movieHeading").innerText = `Select Seats for "${movieName}"`;
+    document.getElementById("movieNameInput").value = movieName;
 
-const heading = document.getElementById("movieHeading");
-if (heading) {
-  heading.innerText = `Select Seats for "${movieName}"`;
-}
+    const seatsContainer = document.getElementById("seatsContainer");
+    const totalPriceEl = document.getElementById("totalPrice");
+    const selectedSeatsInput = document.getElementById("selectedSeatsInput");
 
-// Optional: Validate before form submit
-document.getElementById("bookingForm")?.addEventListener("submit", function(e) {
-  const seats = document.getElementById("selectedSeatsInput").value;
+    let selectedSeats = [];
 
-  if (!seats) {
-    e.preventDefault();
-    alert("Please select at least one seat.");
-  }
-});
-</script>
+    // Generate 8 rows x 10 seats = 80 seats
+    const rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+    for (let row = 0; row < rows.length; row++) {
+      for (let col = 1; col <= 10; col++) {
+        const seatId = `${rows[row]}${col}`;
+        const seat = document.createElement("div");
+        seat.classList.add("seat");
+        seat.dataset.seatId = seatId;
+        seat.addEventListener("click", () => toggleSeat(seat));
+        seatsContainer.appendChild(seat);
+      }
+    }
+
+    function toggleSeat(seat) {
+      const seatId = seat.dataset.seatId;
+      const index = selectedSeats.indexOf(seatId);
+
+      if (index === -1) {
+        selectedSeats.push(seatId);
+        seat.classList.add("selected");
+      } else {
+        selectedSeats.splice(index, 1);
+        seat.classList.remove("selected");
+      }
+
+      updatePrice();
+    }
+
+    function updatePrice() {
+      totalPriceEl.textContent = selectedSeats.length * SEAT_PRICE;
+      selectedSeatsInput.value = selectedSeats.join(",");
+    }
+
+    // Handle form submission
+    document.getElementById("bookingForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      if (selectedSeats.length === 0) {
+        alert("Please select at least one seat.");
+        return;
+      }
+
+      const formData = new FormData(this);
+
+      fetch("book.php", {
+        method: "POST",
+        body: formData
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === "success") {
+            // Save booking data to show in confirmation
+            localStorage.setItem("bookingData", JSON.stringify({
+              ...data,
+              movie: movieName,
+              seats: selectedSeats,
+              price: selectedSeats.length * SEAT_PRICE,
+              date: new Date().toLocaleString()
+            }));
+            window.location.href = "confirmation.html";
+          } else {
+            alert("Booking failed!");
+          }
+        });
+    });
+  </script>
 
 </body>
+
 </html>

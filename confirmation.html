@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Booking Confirmation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css" />
+
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+        }
+
+        .content-wrapper {
+            padding-top: 60px;
+            /* Space below navbar */
+        }
+
+        .ticket {
+            max-width: 600px;
+            margin: 60px auto 30px;
+            /* Top margin added here */
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+
+        .ticket h2 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+
+        .ticket p {
+            font-size: 16px;
+            margin: 12px 0;
+            color: #333;
+        }
+
+        #qrcode {
+            display: block;
+            margin: 20px auto;
+            width: 200px;
+            height: 200px;
+        }
+
+        .download-btn {
+            display: block;
+            margin: 30px auto 0;
+            padding: 12px 24px;
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .download-btn:hover {
+            background-color: #219150;
+        }
+
+        .footer-note {
+            margin-top: 30px;
+            font-size: 14px;
+            color: #888;
+            text-align: center;
+        }
+
+
+
+        /* Optional: Hide QR Code when printing (if needed) */
+        @media print {
+            #qrcode {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navbar Placeholder -->
+    <div id="navbar-placeholder"></div>
+
+
+    <div class="content-wrapper">
+
+        <!-- This is what will be downloaded -->
+        <div class="ticket" id="ticketContent">
+            <h2>🎟️ Booking Confirmed</h2>
+            <p><strong>Movie:</strong> <span id="conf-movie">Loading...</span></p>
+            <p><strong>Seats:</strong> <span id="conf-seats">Loading...</span></p>
+            <p><strong>Total Price:</strong> ₹<span id="conf-price">0</span></p>
+            <p><strong>Booking Date:</strong> <span id="conf-date">Loading...</span></p>
+            <canvas id="qrcode"></canvas>
+        </div>
+
+        <!-- Download Button -->
+        <button class="download-btn" onclick="downloadTicket()">📥 Download Ticket</button>
+        <div class="footer-note">Thank you for choosing our cinema! Enjoy your movie.</div>
+    </div>
+
+    <!-- Footer Placeholder -->
+    <div id="footer-placeholder"></div>
+
+    <!-- Load Navbar/Footer Dynamically -->
+    <script>
+        fetch('navbar.html')
+            .then(res => res.text())
+            .then(data => {
+                document.getElementById('navbar-placeholder').innerHTML = data;
+            });
+
+        fetch('footer.html')
+            .then(res => res.text())
+            .then(data => {
+                document.getElementById('footer-placeholder').innerHTML = data;
+            });
+    </script>
+
+    <!-- Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <script>
+        const bookingData = JSON.parse(localStorage.getItem("bookingData"));
+
+        if (bookingData) {
+            document.getElementById("conf-movie").textContent = bookingData.movie;
+            document.getElementById("conf-seats").textContent = bookingData.seats.join(", ");
+            document.getElementById("conf-price").textContent = bookingData.price;
+            document.getElementById("conf-date").textContent = bookingData.date;
+
+            // Generate QR Code
+            const qrText = `
+            Movie: ${bookingData.movie}
+            Seats: ${bookingData.seats.join(", ")}
+            Price: ₹${bookingData.price}
+            Date: ${bookingData.date}
+            `.trim();
+
+            QRCode.toCanvas(document.getElementById('qrcode'), qrText, function (error) {
+                if (error) console.error(error);
+                console.log("QR Code generated successfully.");
+            });
+        } else {
+            document.getElementById("ticketContent").innerHTML = "<h2>No booking found.</h2>";
+        }
+
+        function downloadTicket() {
+            const element = document.getElementById('ticketContent');
+            const filename = `${bookingData.movie}_ticket.pdf`;
+
+            const opt = {
+                margin: 0.5,
+                filename: filename,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(element).save();
+        }
+    </script>
+
+</body>
+
+</html>
